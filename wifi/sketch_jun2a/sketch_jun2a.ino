@@ -14,9 +14,11 @@ int ledStatus = 0;
 void handleNewMessages(int numNewMessages) {
  Serial.print("led status = ");
  Serial.print(String(numNewMessages));
- Serial.println(",pesan berhasil diterima\n");
+ Serial.println(",new messages\n");
  for (int i=0; i<numNewMessages; i++) {
    String chat_id = String(bot.messages[i].chat_id);
+   Serial.print("Chat id: ");
+   Serial.println(chat_id);
    String text = bot.messages[i].text;
    String from_name = bot.messages[i].from_name;
    if (from_name == "") from_name = "Guest";
@@ -84,8 +86,7 @@ void loop() {
  if (millis() > Bot_lasttime + Bot_mtbs)  {
    int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
    while(numNewMessages) {
-     Serial.println("Pesan Diterima");
-     Serial.println("sedang diproses.....");
+     Serial.println("Sending responses.....");
      handleNewMessages(numNewMessages);
      numNewMessages = bot.getUpdates(bot.last_message_received + 1);
    }
