@@ -13,29 +13,29 @@ void onBeatDetected() {
     Serial.println("Beat!");
 }
 
-void calibrateBaseline() {
-    Serial.println("Calibrating baseline...");
-    long redSum = 0;
-    long irSum = 0;
+// void calibrateBaseline() {
+//     Serial.println("Calibrating baseline...");
+//     long redSum = 0;
+//     long irSum = 0;
 
-    for (int i = 0; i < BASELINE_READINGS; i++) {
-        pox.update();
-        redSum += pox.getRawIR();
-        irSum += pox.getRawRed();
-        delay(10);
-    }
+//     for (int i = 0; i < BASELINE_READINGS; i++) {
+//         pox.update();
+//         redSum += pox.getRawIR();
+//         irSum += pox.getRawRed();
+//         delay(10);
+//     }
 
-    baselineRed = redSum / BASELINE_READINGS;
-    baselineIR = irSum / BASELINE_READINGS;
+//     // baselineRed = redSum / BASELINE_READINGS;
+//     // baselineIR = irSum / BASELINE_READINGS;
 
-    Serial.print("Baseline Red: ");
-    Serial.println(baselineRed);
-    Serial.print("Baseline IR: ");
-    Serial.println(baselineIR);
-}
+//     Serial.print("Baseline Red: ");
+//     Serial.println(baselineRed);
+//     Serial.print("Baseline IR: ");
+//     Serial.println(baselineIR);
+// }
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(9600);
     Serial.print("Initializing pulse oximeter..");
 
     if (!pox.begin()) {
@@ -46,28 +46,28 @@ void setup() {
     }
 
     pox.setOnBeatDetectedCallback(onBeatDetected);
-    calibrateBaseline();
+    //calibrateBaseline();
 }
 
 void loop() {
     pox.update();
 
-    float currentRed = pox.getRawRed();
-    float currentIR = pox.getRawIR();
+    // float currentRed = pox.getRawRed();
+    // float currentIR = pox.getRawIR();
 
-    // Apply baseline calibration
-    float calibratedRed = currentRed - baselineRed;
-    float calibratedIR = currentIR - baselineIR;
+    // // Apply baseline calibration
+    // float calibratedRed = currentRed - baselineRed;
+    // float calibratedIR = currentIR - baselineIR;
 
     if (millis() - tsLastReport > REPORTING_PERIOD_MS) {
-        Serial.print("Heart rate:");
-        Serial.print(pox.getHeartRate());
-        Serial.print("bpm / SpO2:");
-        Serial.print(pox.getSpO2());
-        Serial.print("% / Calibrated Red:");
-        Serial.print(calibratedRed);
-        Serial.print(" / Calibrated IR:");
-        Serial.println(calibratedIR);
+        Serial.print("Heart rate: ");
+        Serial.println(pox.getHeartRate());
+        Serial.print("bpm / SpO2: ");
+        Serial.println(pox.getSpO2());
+        // Serial.print("% / Calibrated Red:");
+        // Serial.print(calibratedRed);
+        // Serial.print(" / Calibrated IR:");
+        // Serial.println(calibratedIR);
 
         tsLastReport = millis();
     }

@@ -37,5 +37,10 @@ void loop() {
     String message = "Accelerometer Data:\n" + data;
     Serial.println(message);
     bot.sendMessage(chat_id, message, "");
+
+    String dataTemp = Serial.readStringUntil('\n');
+    String messageTemp = "Temperature:\n" + dataTemp;
+    Serial.println(messageTemp);
+    bot.sendMessage(chat_id, messageTemp, "");
   }
 }
