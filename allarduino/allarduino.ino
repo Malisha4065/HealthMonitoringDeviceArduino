@@ -1,5 +1,15 @@
 #include <LiquidCrystal.h>
 
+#include <Wire.h>
+#include "MAX30100_PulseOximeter.h"
+
+#define REPORTING_PERIOD_MS 1000
+
+// For Pulse oximeter
+PulseOximeter pox;
+uint32_t tsLastReport = 0;
+
+// For accelerometer
 const int xPin = A1;
 const int yPin = A2;
 const int zPin = A3;
@@ -8,6 +18,13 @@ const int zPin = A3;
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
+void onBeatDetected()
+{
+    lcd.clear();
+    lcd.print("Beat!");
+    delay(3000);
+}
+
 void setup() {
   Serial.begin(9600); // Initialize serial communication with D1 Mini
   pinMode(xPin, INPUT);
@@ -15,7 +32,19 @@ void setup() {
   pinMode(zPin, INPUT);
 
   lcd.begin(16, 2);
-  lcd.print("hello, world!");
+  lcd.print("pulse..");
+  delay(1000);
+  if (!pox.begin()) {
+        lcd.clear();
+        lcd.print("PULSE FAILED");
+        for(;;);
+  } else {
+        lcd.clear();
+        lcd.print("PULSE SUCCESS");
+        delay(5000);
+  }
+
+  pox.setOnBeatDetectedCallback(onBeatDetected);
 }
 
 void loop() {
@@ -34,15 +63,32 @@ void loop() {
   // Display the values on the LCD
   lcd.clear(); // Clear the LCD display
   lcd.setCursor(0, 0); // Set cursor to the first column (0) of the first row (0)
-  lcd.print("Accelerometer Data");
+  lcd.print("Accelerometer: ");
 
   lcd.setCursor(0, 1); // Set cursor to the first column (0) of the second row (1)
-  lcd.print("X:");
   lcd.print(x);
-  lcd.print(" Y:");
+  lcd.print(" ");
   lcd.print(y);
-  lcd.print(" Z:");
+  lcd.print(" ");
   lcd.print(z);
 
   delay(5000); // Wait for 1 minute
+  pox.update();
+  if (millis() - tsLastReport > REPORTING_PERIOD_MS) {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Heart rate:");
+        lcd.setCursor(0, 1);
+        lcd.print(pox.getHeartRate());
+        delay(1000);
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("bpm / SpO2:");
+        lcd.setCursor(0, 1);
+        lcd.print(pox.getSpO2());
+        lcd.println("%");
+        delay(1000);
+        tsLastReport = millis();
+    }
+  delay(1000);
 }
