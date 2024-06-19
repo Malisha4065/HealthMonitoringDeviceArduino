@@ -17,12 +17,12 @@ const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 // Variables to store the current time and the time when the LCD was last updated
-unsigned long currentMillis, previousBeatMillis = 0, previousAccelMillis = 0, previousHeartRateMillis = 0;
+unsigned long currentMillis, previousBeatMillis = 0, previousDisplayMillis = 0;
 
 // The desired intervals (in milliseconds) for LCD updates
-const unsigned long LCD_BEAT_INTERVAL = 5000; // 3 seconds
-const unsigned long LCD_ACCEL_INTERVAL = 5000; // 5 seconds
-const unsigned long LCD_HEART_RATE_INTERVAL = 5000; // 1 second
+const unsigned long LCD_DISPLAY_INTERVAL = 5000; // 5 seconds
+
+int displayState = 0; // 0 for accelerometer, 1 for heart rate
 
 void onBeatDetected()
 {
@@ -45,7 +45,7 @@ void setup() {
     lcd.clear();
     lcd.print("PULSE SUCCESS");
     previousBeatMillis = millis(); // Initialize the last beat time
-    previousAccelMillis = millis();
+    previousDisplayMillis = millis(); // Initialize the last display update time
   }
   pox.setOnBeatDetectedCallback(onBeatDetected);
 }
@@ -65,34 +65,32 @@ void loop() {
 
   currentMillis = millis(); // Get the current time
 
-  // Check if it's time to update the accelerometer display
-  if (currentMillis - previousAccelMillis >= LCD_ACCEL_INTERVAL) {
-    previousAccelMillis = currentMillis; // Update the last accelerometer update time
+  // Check if it's time to update the LCD display
+  if (currentMillis - previousDisplayMillis >= LCD_DISPLAY_INTERVAL) {
+    previousDisplayMillis = currentMillis; // Update the last display update time
 
-    // Display the accelerometer values on the LCD
     lcd.clear(); // Clear the LCD display
-    lcd.setCursor(0, 0); // Set cursor to the first column (0) of the first row (0)
-    lcd.print("Accelerometer: ");
-    lcd.setCursor(0, 1); // Set cursor to the first column (0) of the second row (1)
-    lcd.print(x);
-    lcd.print(" ");
-    lcd.print(y);
-    lcd.print(" ");
-    lcd.print(z);
-  }
 
-  // Check if it's time to update the heart rate display
-  if (currentMillis - previousHeartRateMillis >= LCD_HEART_RATE_INTERVAL) {
-    previousHeartRateMillis = currentMillis; // Update the last heart rate update time
+    if (displayState == 0) {
+      // Display the accelerometer values on the LCD
+      lcd.setCursor(0, 0); // Set cursor to the first column (0) of the first row (0)
+      lcd.print("Accelerometer: ");
+      lcd.setCursor(0, 1); // Set cursor to the first column (0) of the second row (1)
+      lcd.print(x);
+      lcd.print(" ");
+      lcd.print(y);
+      lcd.print(" ");
+      lcd.print(z);
 
-    if (currentMillis - tsLastReport > REPORTING_PERIOD_MS) {
-      lcd.clear();
+      displayState = 1; // Next state will be to display heart rate
+    } else if (displayState == 1) {
+      // Display the heart rate on the LCD
       lcd.setCursor(0, 0);
       lcd.print("Heart rate:");
       lcd.setCursor(0, 1);
       lcd.print(pox.getHeartRate());
 
-      tsLastReport = currentMillis;
+      displayState = 0; // Next state will be to display accelerometer values
     }
   }
 
