@@ -1,6 +1,8 @@
 #include <LiquidCrystal.h>
 #include <Wire.h>
 #include "MAX30100_PulseOximeter.h"
+#include "dht.h"
+
 #define REPORTING_PERIOD_MS 1000
 
 // For Pulse oximeter
@@ -12,6 +14,10 @@ const int xPin = A1;
 const int yPin = A2;
 const int zPin = A3;
 
+// For DHT11 sensor
+dht tempSensor;
+const int dhtPin = 7;
+
 // LCD pin initialization
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
@@ -22,7 +28,7 @@ unsigned long currentMillis, previousBeatMillis = 0, previousDisplayMillis = 0;
 // The desired intervals (in milliseconds) for LCD updates
 const unsigned long LCD_DISPLAY_INTERVAL = 5000; // 5 seconds
 
-int displayState = 0; // 0 for accelerometer, 1 for heart rate
+int displayState = 0; // 0 for accelerometer, 1 for heart rate, 2 for temperature
 
 void onBeatDetected()
 {
@@ -89,6 +95,18 @@ void loop() {
       lcd.print("Heart rate:");
       lcd.setCursor(0, 1);
       lcd.print(pox.getHeartRate());
+
+      displayState = 2; // Next state will be to display temperature
+    } else if (displayState == 2) {
+      // Display the temperature on the LCD
+      int val = tempSensor.read11(dhtPin);
+      if (val == -1) {
+        lcd.setCursor(0, 0);
+        lcd.print("Temperature:");
+        lcd.setCursor(0, 1);
+        lcd.print(tempSensor.temperature);
+        lcd.print("C");
+      }
 
       displayState = 0; // Next state will be to display accelerometer values
     }
