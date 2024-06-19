@@ -11,8 +11,8 @@ void loop() {
   if (val == -1) {
     Serial.print("Temperature: ");
     Serial.println(tempSensor.temperature);
-    Serial.print("Humidity: ");
-    Serial.println(tempSensor.humidity);
+    // Serial.print("Humidity: ");
+    // Serial.println(tempSensor.humidity);
   }
-  delay(1000);
+  delay(3000);
 }
