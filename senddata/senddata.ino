@@ -39,8 +39,14 @@ void loop() {
     bot.sendMessage(chat_id, message, "");
 
     String dataTemp = Serial.readStringUntil('\n');
-    String messageTemp = "Temperature:\n" + dataTemp;
+    String messageTemp = "Heart Rate:\n" + dataTemp;
     Serial.println(messageTemp);
     bot.sendMessage(chat_id, messageTemp, "");
+
+    String dataTemp2 = Serial.readStringUntil('\n');
+    String messageTemp2 = "Temperature:\n" + dataTemp2;
+    Serial.println(messageTemp2);
+    bot.sendMessage(chat_id, messageTemp2, "");
+
   }
 }

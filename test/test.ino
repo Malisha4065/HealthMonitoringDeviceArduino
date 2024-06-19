@@ -88,13 +88,22 @@ void loop() {
       lcd.print(" ");
       lcd.print(z);
 
+      Serial.print(x);
+      Serial.print(",");
+      Serial.print(y);
+      Serial.print(",");
+      Serial.println(z);
+
       displayState = 1; // Next state will be to display heart rate
     } else if (displayState == 1) {
       // Display the heart rate on the LCD
       lcd.setCursor(0, 0);
       lcd.print("Heart rate:");
       lcd.setCursor(0, 1);
-      lcd.print(pox.getHeartRate());
+      float heartRate = pox.getHeartRate();
+      lcd.print(heartRate);
+
+      Serial.println(heartRate);
 
       displayState = 2; // Next state will be to display temperature
     } else if (displayState == 2) {
@@ -104,8 +113,11 @@ void loop() {
         lcd.setCursor(0, 0);
         lcd.print("Temperature:");
         lcd.setCursor(0, 1);
-        lcd.print(tempSensor.temperature);
+        double temperature = tempSensor.temperature;
+        lcd.print(temperature);
         lcd.print("C");
+
+        Serial.println(temperature);
       }
 
       displayState = 0; // Next state will be to display accelerometer values
