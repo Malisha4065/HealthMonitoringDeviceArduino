@@ -34,6 +34,7 @@ void setup() {
 String accelerometerData = "";
 String heartRateData = "";
 String temperatureData = "";
+String oxygenData = "";
 
 void loop() {
   if (Serial.available() > 0) {
@@ -44,12 +45,25 @@ void loop() {
     heartRateData = data.substring(2);
   } else if (data.startsWith("T:")) {
     temperatureData = data.substring(2);
+  } else if (data.startsWith("O:")) {
+    oxygenData = data.substring(2);
+  } else if (data.startsWith("E:")) {
+    String emergency = data.substring(2);
+    String sendEmergency = "🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑\n";
+    sendEmergency += emergency + "\n";
+    bot.sendMessage(chat_id, sendEmergency, "");
   }
 
   }
   if (accelerometerData != "" && heartRateData != "" && temperatureData != "") {
-      String message = "Accelerometer Data:\n" + accelerometerData + "\n";
-      message += "Heart Rate:\n" + heartRateData + "\n";
+      String message = "Accelerometer Data:\n" + accelerometerData + "\n\n";
+
+      if (oxygenData == "") {
+        message += "No Heart Beat Detected\n\n";
+      } else {
+        message += "Heart Rate:\n" + heartRateData + "\n\n";
+        message += "Blood Oxygen:\n" + oxygenData + "\n\n"; 
+      }
       message += "Temperature:\n" + temperatureData + "\n";
 
       bot.sendMessage(chat_id, message, "");
@@ -58,5 +72,6 @@ void loop() {
       accelerometerData = "";
       heartRateData = "";
       temperatureData = "";
+      oxygenData = "";
     }
 }

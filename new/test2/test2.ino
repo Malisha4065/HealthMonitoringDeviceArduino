@@ -25,6 +25,11 @@ int zMin = 287;
 int zMax = 430;
 //MMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 
+// thresholds
+const float SHOCK_THRESHOLD = 2.0;
+const int TEMP_THRESHOLD = 38;
+
+
 // For DHT11 sensor
 dht tempSensor;
 const int dhtPin = 7;
@@ -43,7 +48,7 @@ int displayState = 0; // 0 for accelerometer, 1 for heart rate, 2 for temperatur
 
 void onBeatDetected()
 {
-    previousBeatMillis = millis(); // Update the last beat time
+  previousBeatMillis = millis(); // Update the last beat time
 }
 
 void setup() {
@@ -67,6 +72,8 @@ void setup() {
   pox.setOnBeatDetectedCallback(onBeatDetected);
 }
 
+bool shock = false;
+
 void loop() {
   pox.update();
   int x = analogRead(xPin);
@@ -87,6 +94,11 @@ void loop() {
   // Serial.print(",");
   // Serial.println(z);
 
+  // Shock detection
+  if (abs(x_g_value) >= SHOCK_THRESHOLD || abs(y_g_value) >= SHOCK_THRESHOLD || abs(z_g_value) >= SHOCK_THRESHOLD) {
+    shock = true;
+  }
+
   currentMillis = millis(); // Get the current time
 
   // Check if it's time to update the LCD display
@@ -97,9 +109,16 @@ void loop() {
 
     if (displayState == 0) {
       // Display the accelerometer values on the LCD
-      lcd.setCursor(0, 0); // Set cursor to the first column (0) of the first row (0)
-      lcd.print("Accelerometer: ");
-      lcd.setCursor(0, 1); // Set cursor to the first column (0) of the second row (1)
+      lcd.setCursor(0, 0);
+      if (shock) {
+        lcd.print("FALL DETECTED!");
+        Serial.println("E:FALL DETECTED!");
+        shock = false;
+      } else {
+        lcd.print("Accelerometer: ");
+      }
+      
+      lcd.setCursor(0, 1);
       lcd.print(x_g_value, 0);
       lcd.print("G ");
       lcd.print(y_g_value, 0);
@@ -108,48 +127,79 @@ void loop() {
       lcd.print("G");
 
       Serial.print("A:");
-      Serial.print(x);
+      Serial.print(x_g_value, 0);
+      Serial.print("G");
       Serial.print(",");
-      Serial.print(y);
+      Serial.print(y_g_value, 0);
+      Serial.print("G");
       Serial.print(",");
-      Serial.println(z);
+      Serial.print(z_g_value, 0);
+      Serial.println("G");
 
       displayState = 1; // Next state will be to display heart rate
     } else if (displayState == 1) {
       // Display the heart rate on the LCD
       lcd.setCursor(0, 0);
-      lcd.print("Heart rate:");
-      lcd.setCursor(0, 1);
       float heartRate = pox.getHeartRate();
-      lcd.print(heartRate);
+      float spo2 = pox.getSpO2();
+      bool nobeat = false;
+      heartRate -= 90;  // calibration
+      if (heartRate > 100) {
+        lcd.print("High Heart Rate!");
+        Serial.println("E:HIGH HEART RATE DETECTED!");
+      } else if (heartRate > 60) {
+        lcd.print("Heart rate:");
+      } else if (heartRate > 0) {
+        lcd.print("Low Heart Rate!");
+        Serial.println("E:LOW HEART RATE DETECTED!");
+      } else {
+        lcd.print("No HeartBeat");
+        heartRate = 0;
+        nobeat = true;
+      }
+
+      lcd.setCursor(0, 1);
+      lcd.print(heartRate, 0);
+      lcd.print(" bpm ");
+      if (!nobeat) {
+        lcd.print(" ");
+        lcd.print(spo2);
+        lcd.print("%");
+        Serial.print("O:");
+        Serial.print(spo2);
+        Serial.println("%");
+      }
 
       Serial.print("H:");
-      Serial.println(heartRate);
+      Serial.print(heartRate, 0);
+      Serial.println(" bpm");
 
       displayState = 2; // Next state will be to display temperature
     } else if (displayState == 2) {
       // Display the temperature on the LCD
       int val = tempSensor.read11(dhtPin);
       if (val == -1) {
-        lcd.setCursor(0, 0);
-        lcd.print("Temperature:");
-        lcd.setCursor(0, 1);
         double temperature = tempSensor.temperature;
+        lcd.setCursor(0, 0);
+        if (temperature > TEMP_THRESHOLD) {
+          lcd.print("FEVER DETECTED!");
+          Serial.println("E:FEVER DETECTED!");
+        } else {
+          lcd.print("Temperature:");
+        }
+        lcd.setCursor(0, 1);
         lcd.print(temperature);
         lcd.print("C");
 
         Serial.print("T:");
-        Serial.println(temperature);
+        Serial.print(temperature);
+        Serial.println(" C");
+      } else {
+        lcd.setCursor(0, 0);
+        lcd.print("No temp detected");
       }
 
       displayState = 0; // Next state will be to display accelerometer values
     }
   }
-
-  // Check if it's time to display the beat message
-  // if (currentMillis - previousBeatMillis < LCD_BEAT_INTERVAL) {
-  //   lcd.clear();
-  //   lcd.print("Beat!");
-  //   Serial.println("Beat");
-  // }
 }
