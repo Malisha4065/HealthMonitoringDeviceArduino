@@ -14,6 +14,17 @@ const int xPin = A1;
 const int yPin = A2;
 const int zPin = A3;
 
+//MMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+int xMin = 272;
+int xMax = 408;
+//MMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+int yMin = 269;
+int yMax = 408;
+//MMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+int zMin = 287;
+int zMax = 430;
+//MMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+
 // For DHT11 sensor
 dht tempSensor;
 const int dhtPin = 7;
@@ -62,6 +73,13 @@ void loop() {
   int y = analogRead(yPin);
   int z = analogRead(zPin);
 
+  long xMilliG = map(x, xMin, xMax, -1000, 1000);
+  long yMilliG = map(y, yMin, yMax, -1000, 1000);
+  long zMilliG = map(z, zMin, zMax, -1000, 1000);
+
+  float x_g_value = xMilliG / 1000.0;
+  float y_g_value = yMilliG / 1000.0;
+  float z_g_value = zMilliG / 1000.0;
   // Send the data to D1 Mini
   // Serial.print(x);
   // Serial.print(",");
@@ -82,11 +100,12 @@ void loop() {
       lcd.setCursor(0, 0); // Set cursor to the first column (0) of the first row (0)
       lcd.print("Accelerometer: ");
       lcd.setCursor(0, 1); // Set cursor to the first column (0) of the second row (1)
-      lcd.print(x);
-      lcd.print(" ");
-      lcd.print(y);
-      lcd.print(" ");
-      lcd.print(z);
+      lcd.print(x_g_value, 0);
+      lcd.print("G ");
+      lcd.print(y_g_value, 0);
+      lcd.print("G ");
+      lcd.print(z_g_value, 0);
+      lcd.print("G");
 
       Serial.print("A:");
       Serial.print(x);
