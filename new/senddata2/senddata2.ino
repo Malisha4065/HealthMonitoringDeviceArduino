@@ -2,19 +2,18 @@
 #include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h>
 
-char ssid[] = "Dialog 4G 447";     // your network SSID (name)
-char password[] = "D9E83017"; // your network keyD9E83017
+char ssid[] = "Dushmin";    
+char password[] = "123456789"; 
 #define BOTtoken "7265419879:AAFskZZ8JUehZfJCK-l2dJwIO_BSMgC9FHU"  
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
 
-const char* chat_id = "1031909365"; // Replace with your chat ID
+const char* chat_id = "1031909365"; 
 
 void setup() {
-  Serial.begin(9600); // Initialize serial communication with Arduino Uno
+  Serial.begin(9600); 
 
-  // Connect to WiFi
   Serial.print("Connecting to WiFi: ");
   Serial.println(ssid);
   WiFi.begin(ssid, password);
@@ -27,7 +26,6 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-  // Bypass certificate validation for testing purposes
   client.setInsecure();
 }
 

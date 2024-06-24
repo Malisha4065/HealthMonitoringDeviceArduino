@@ -32,27 +32,25 @@ const int TEMP_THRESHOLD = 38;
 
 // For DHT11 sensor
 dht tempSensor;
-const int dhtPin = 7;
+const int dhtPin = 3;
 
 // LCD pin initialization
-const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+const int rs = 12, en = 11, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
-// Variables to store the current time and the time when the LCD was last updated
 unsigned long currentMillis, previousBeatMillis = 0, previousDisplayMillis = 0;
 
-// The desired intervals (in milliseconds) for LCD updates
-const unsigned long LCD_DISPLAY_INTERVAL = 5000; // 5 seconds
+const unsigned long LCD_DISPLAY_INTERVAL = 5000;
 
 int displayState = 0; // 0 for accelerometer, 1 for heart rate, 2 for temperature
 
 void onBeatDetected()
 {
-  previousBeatMillis = millis(); // Update the last beat time
+  previousBeatMillis = millis(); 
 }
 
 void setup() {
-  Serial.begin(9600); // Initialize serial communication with D1 Mini
+  Serial.begin(9600); 
   pinMode(xPin, INPUT);
   pinMode(yPin, INPUT);
   pinMode(zPin, INPUT);
@@ -62,12 +60,12 @@ void setup() {
   if (!pox.begin()) {
     lcd.clear();
     lcd.print("PULSE FAILED");
-    while (1); // Halt the program
+    while (1); 
   } else {
     lcd.clear();
     lcd.print("PULSE SUCCESS");
-    previousBeatMillis = millis(); // Initialize the last beat time
-    previousDisplayMillis = millis(); // Initialize the last display update time
+    previousBeatMillis = millis(); 
+    previousDisplayMillis = millis(); 
   }
   pox.setOnBeatDetectedCallback(onBeatDetected);
 }
@@ -87,28 +85,19 @@ void loop() {
   float x_g_value = xMilliG / 1000.0;
   float y_g_value = yMilliG / 1000.0;
   float z_g_value = zMilliG / 1000.0;
-  // Send the data to D1 Mini
-  // Serial.print(x);
-  // Serial.print(",");
-  // Serial.print(y);
-  // Serial.print(",");
-  // Serial.println(z);
-
-  // Shock detection
+  
   if (abs(x_g_value) >= SHOCK_THRESHOLD || abs(y_g_value) >= SHOCK_THRESHOLD || abs(z_g_value) >= SHOCK_THRESHOLD) {
     shock = true;
   }
 
-  currentMillis = millis(); // Get the current time
+  currentMillis = millis(); 
 
-  // Check if it's time to update the LCD display
   if (currentMillis - previousDisplayMillis >= LCD_DISPLAY_INTERVAL) {
-    previousDisplayMillis = currentMillis; // Update the last display update time
+    previousDisplayMillis = currentMillis; 
 
-    lcd.clear(); // Clear the LCD display
+    lcd.clear();
 
     if (displayState == 0) {
-      // Display the accelerometer values on the LCD
       lcd.setCursor(0, 0);
       if (shock) {
         lcd.print("FALL DETECTED!");
@@ -136,9 +125,8 @@ void loop() {
       Serial.print(z_g_value, 0);
       Serial.println("G");
 
-      displayState = 1; // Next state will be to display heart rate
+      displayState = 1; 
     } else if (displayState == 1) {
-      // Display the heart rate on the LCD
       lcd.setCursor(0, 0);
       float heartRate = pox.getHeartRate();
       float spo2 = pox.getSpO2();
@@ -174,9 +162,8 @@ void loop() {
       Serial.print(heartRate, 0);
       Serial.println(" bpm");
 
-      displayState = 2; // Next state will be to display temperature
+      displayState = 2; 
     } else if (displayState == 2) {
-      // Display the temperature on the LCD
       int val = tempSensor.read11(dhtPin);
       if (val == -1) {
         double temperature = tempSensor.temperature;
@@ -199,7 +186,7 @@ void loop() {
         lcd.print("No temp detected");
       }
 
-      displayState = 0; // Next state will be to display accelerometer values
+      displayState = 0; 
     }
   }
 }
